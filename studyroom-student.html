@@ -65,7 +65,7 @@ footer{text-align:center;color:#9a9489;font-size:10px;letter-spacing:.08em;paddi
  <h2>예약 신청</h2>
  <p class="sub">학생 정보와 휴대폰 뒷번호 4자리를 입력한 뒤 날짜와 시간을 선택해 주세요. 예약 시간은 1시간 단위이며 연속된 시간으로 신청할 수 있습니다.</p>
  <div class="identity">
-  <div><label for="studentName">학생 이름</label><input id="studentName" maxlength="30" placeholder="이름 입력" autocomplete="name"></div>
+  <div><label for="studentName">학생 이름</label><input id="studentName" maxlength="30" placeholder="이름 입력" autocomplete="off"></div>
   <div><label for="seatNo">좌석 번호</label><input id="seatNo" maxlength="12" placeholder="예: 12번"></div>
  </div>
  <label for="pin">휴대폰 뒷번호 4자리</label><input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="휴대폰 뒷번호 4자리" autocomplete="new-password">
@@ -80,7 +80,7 @@ footer{text-align:center;color:#9a9489;font-size:10px;letter-spacing:.08em;paddi
  <h2>내 예약 확인</h2>
  <p class="sub">예약 신청 때 입력한 이름, 좌석 번호, 휴대폰 뒷번호 4자리를 동일하게 입력한 뒤 조회하세요.</p>
  <div class="identity">
-  <div><label for="lookupName">학생 이름</label><input id="lookupName" maxlength="30" placeholder="이름 입력"></div>
+  <div><label for="lookupName">학생 이름</label><input id="lookupName" maxlength="30" placeholder="이름 입력" autocomplete="off"></div>
   <div><label for="lookupSeat">좌석 번호</label><input id="lookupSeat" maxlength="12" placeholder="예: 12번"></div>
  </div>
  <label for="lookupPin">휴대폰 뒷번호 4자리</label><input id="lookupPin" type="password" inputmode="numeric" maxlength="4" placeholder="휴대폰 뒷번호 4자리" autocomplete="off">
