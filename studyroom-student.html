@@ -63,9 +63,10 @@ footer{text-align:center;color:#9a9489;font-size:10px;letter-spacing:.08em;paddi
 <main>
 <section class="card">
  <h2>예약 신청</h2>
+ <form autocomplete="off" onsubmit="return false;">
  <p class="sub">학생 정보와 휴대폰 뒷번호 4자리를 입력한 뒤 날짜와 시간을 선택해 주세요. 예약 시간은 1시간 단위이며 연속된 시간으로 신청할 수 있습니다.</p>
  <div class="identity">
-  <div><label for="studentName">학생 이름</label><input id="studentName" name="booking_student_label" maxlength="30" placeholder="이름 입력" autocomplete="new-password" readonly onfocus="this.removeAttribute(\'readonly\')"></div>
+  <div><label for="studentName">학생 이름</label><input id="studentName" name="reservation_member_text" type="text" maxlength="30" placeholder="학생 이름 입력" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
   <div><label for="seatNo">좌석 번호</label><input id="seatNo" maxlength="12" placeholder="예: 12번"></div>
  </div>
  <label for="pin">휴대폰 뒷번호 4자리</label><input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="휴대폰 뒷번호 4자리" autocomplete="new-password">
@@ -73,7 +74,8 @@ footer{text-align:center;color:#9a9489;font-size:10px;letter-spacing:.08em;paddi
  <div class="slots" id="slots"><div class="empty" style="grid-column:1/-1">날짜를 선택하면 예약 가능한 시간이 표시됩니다.</div></div>
  <div class="legend"><span><i class="dot active"></i>선택 가능</span><span><i class="dot"></i>선택한 시간</span><span><i class="dot off"></i>예약 완료</span></div>
  <div class="notice" id="bookingNotice"></div>
- <div class="actions"><button class="primary" id="bookBtn">예약 신청하기</button><button class="secondary" id="clearBtn">선택 초기화</button></div>
+ <div class="actions"><button class="primary" id="bookBtn" type="button">예약 신청하기</button><button class="secondary" id="clearBtn" type="button">선택 초기화</button></div>
+</form>
 </section>
 
 <section class="card">
