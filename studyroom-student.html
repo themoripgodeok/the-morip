@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#22211f">
+<title>스터디룸 예약 · 24시 지원</title>
+<style>
+:root{--ink:#25231f;--muted:#817c72;--paper:#f6f4ef;--card:#fffefa;--line:#e8e3d9;--gold:#a88950;--gold-dark:#806638;--green:#52765e;--red:#a34f45;--shadow:0 18px 50px rgba(44,38,27,.08)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,"Noto Sans KR","Malgun Gothic",sans-serif;letter-spacing:-.025em}
+header{background:linear-gradient(135deg,#24231f,#39352d);color:#f7f2e8;padding:34px 22px 30px}
+.head{max-width:1080px;margin:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.eyebrow{font-size:11px;letter-spacing:.22em;color:#c9b78e;font-weight:700}
+h1{font-size:clamp(26px,4vw,38px);font-weight:600;letter-spacing:-.055em;margin:10px 0 7px}
+header p{margin:0;color:#c9c4b9;font-size:13px}
+.headmark{font-size:12px;letter-spacing:.18em;color:#c9b78e;border:1px solid #71664f;padding:11px 14px;border-radius:2px;white-space:nowrap}
+main{max-width:1080px;margin:28px auto 70px;padding:0 18px;display:grid;grid-template-columns:1.05fr .95fr;gap:18px;align-items:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px;box-shadow:var(--shadow)}
+.card h2{font-size:18px;font-weight:650;margin:0 0 5px;letter-spacing:-.04em}
+.sub{font-size:12px;color:var(--muted);line-height:1.65;margin:0 0 20px}
+label{display:block;font-size:12px;font-weight:650;color:#625d53;margin:15px 0 7px}
+input{width:100%;height:46px;border:1px solid #ddd7cb;border-radius:7px;background:#fff;padding:0 13px;font:inherit;font-size:14px;color:var(--ink);outline:none}
+input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(168,137,80,.12)}
+.identity{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.datebar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 0 12px}
+.datebar label{margin:0}
+.datebar input{max-width:190px}
+.slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.slot{border:1px solid var(--line);border-radius:7px;background:#fff;padding:12px 5px;text-align:center;font-size:13px;font-weight:600;color:#5d584f;cursor:pointer;transition:.15s}
+.slot:disabled{background:#f0eee9;color:#b5b0a7;text-decoration:line-through;cursor:not-allowed}
+.slot.selected{background:#2d2b26;color:#fff;border-color:#2d2b26}
+.slot small{display:block;font-size:10px;font-weight:500;margin-top:4px;color:inherit;opacity:.7}
+.actions{display:flex;gap:9px;margin-top:18px}
+button{font:inherit;cursor:pointer}
+.primary{background:#2c2a25;color:#fff;border:1px solid #2c2a25;border-radius:7px;padding:13px 18px;font-size:13px;font-weight:650;flex:1;transition:.15s}
+.primary:hover{background:#4a4335}
+.secondary{background:#fff;color:#514b40;border:1px solid var(--line);border-radius:7px;padding:12px 15px;font-size:12px;font-weight:600}
+.notice{font-size:12px;line-height:1.6;margin-top:13px;min-height:18px;color:var(--muted);white-space:pre-wrap}
+.notice.ok{color:var(--green)}.notice.err{color:var(--red)}
+.legend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin:12px 0 0}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:#d7d1c6}.dot.active{background:#2d2b26}.dot.off{background:#eeeae3;border:1px solid #ddd7cb}
+.account{margin-top:18px}
+.booking{border:1px solid var(--line);border-radius:8px;padding:13px 14px;margin-top:9px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.booking strong{font-size:13px}.booking span{display:block;font-size:11px;color:var(--muted);margin-top:5px}
+.booking .tools{display:flex;gap:6px;flex-shrink:0}
+.booking .tools button{font-size:11px;padding:8px 10px}
+.empty{padding:22px 10px;text-align:center;color:var(--muted);font-size:12px;border:1px dashed var(--line);border-radius:8px}
+.settings{max-width:1080px;margin:16px auto 0;padding:0 18px}
+.settings details{font-size:12px;color:var(--muted)}
+.settings summary{cursor:pointer;display:inline-block;padding:8px 0}
+.settings .urlrow{display:flex;gap:8px;max-width:760px;margin-top:8px}
+.settings .urlrow input{height:40px;font-size:12px}
+.settings .urlrow button{white-space:nowrap}
+footer{text-align:center;color:#9a9489;font-size:10px;letter-spacing:.08em;padding:0 18px 28px}
+@media(max-width:760px){main{grid-template-columns:1fr;margin-top:16px;padding:0 12px;gap:12px}.card{padding:19px}.head{align-items:flex-start}.headmark{display:none}.slots{grid-template-columns:repeat(3,minmax(0,1fr))}.identity{grid-template-columns:1fr 1fr}.settings{padding:0 12px}}
+@media(max-width:380px){.slots{grid-template-columns:repeat(2,minmax(0,1fr))}.identity{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="head"><div><div class="eyebrow">STUDY ROOM · RESERVATION</div><h1>나의 스터디룸 예약</h1><p>원하는 날짜와 시간을 선택해 편리하게 예약하세요.</p></div><div class="headmark">FOCUS ON YOUR TIME</div></div></header>
+
+<main>
+<section class="card">
+ <h2>예약 신청</h2>
+ <p class="sub">학생 정보와 휴대폰 뒷번호 4자리를 입력한 뒤 날짜와 시간을 선택해 주세요. 예약 시간은 1시간 단위이며 연속된 시간으로 신청할 수 있습니다.</p>
+ <div class="identity">
+  <div><label for="studentName">학생 이름</label><input id="studentName" maxlength="30" placeholder="이름 입력" autocomplete="name"></div>
+  <div><label for="seatNo">좌석 번호</label><input id="seatNo" maxlength="12" placeholder="예: 12번"></div>
+ </div>
+ <label for="pin">휴대폰 뒷번호 4자리</label><input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="휴대폰 뒷번호 4자리" autocomplete="new-password">
+ <div class="datebar"><label for="reserveDate">예약 날짜</label><input id="reserveDate" type="date"></div>
+ <div class="slots" id="slots"><div class="empty" style="grid-column:1/-1">날짜를 선택하면 예약 가능한 시간이 표시됩니다.</div></div>
+ <div class="legend"><span><i class="dot active"></i>선택 가능</span><span><i class="dot"></i>선택한 시간</span><span><i class="dot off"></i>예약 완료</span></div>
+ <div class="notice" id="bookingNotice"></div>
+ <div class="actions"><button class="primary" id="bookBtn">예약 신청하기</button><button class="secondary" id="clearBtn">선택 초기화</button></div>
+</section>
+
+<section class="card">
+ <h2>내 예약 확인</h2>
+ <p class="sub">예약 신청 때 입력한 이름, 좌석 번호, 휴대폰 뒷번호 4자리를 동일하게 입력한 뒤 조회하세요.</p>
+ <div class="identity">
+  <div><label for="lookupName">학생 이름</label><input id="lookupName" maxlength="30" placeholder="이름 입력"></div>
+  <div><label for="lookupSeat">좌석 번호</label><input id="lookupSeat" maxlength="12" placeholder="예: 12번"></div>
+ </div>
+ <label for="lookupPin">휴대폰 뒷번호 4자리</label><input id="lookupPin" type="password" inputmode="numeric" maxlength="4" placeholder="휴대폰 뒷번호 4자리" autocomplete="off">
+ <div class="actions"><button class="primary" id="lookupBtn">내 예약 조회</button></div>
+ <div class="notice" id="lookupNotice"></div>
+ <div class="account" id="myBookings"><div class="empty">인증 후 예약 내역을 확인할 수 있습니다.</div></div>
+</section>
+</main>
+<footer>STUDY ROOM RESERVATION · 24:00 END-TIME SUPPORTED · PERSONAL INFORMATION IS USED FOR BOOKING VERIFICATION</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+let selectedSlots=[];
+let editingBookingId='';
+let myBookings=[];
+const apiUrl='https://script.google.com/macros/s/AKfycbztbBvgIKPQjYvm-lLbvUjOC8uMyd8FRR43CmPDW13b5mWifkblS4bSWJQM-kvh-9k/exec';
+function localDate(d=new Date()){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`}
+$('reserveDate').min=localDate();$('reserveDate').value=localDate();
+function studentInfo(nameId,seatId){const name=$(nameId).value.trim(),seat=$(seatId).value.trim();if(!name||!seat)throw Error('학생 이름과 좌석 번호를 모두 입력해 주세요.');return `${name} / ${seat}`;}
+function pinValue(id){const p=$(id).value.trim();if(!/^\d{4}$/.test(p))throw Error('휴대폰 뒷번호 4자리를 숫자로 입력해 주세요.');return p;}
+async function api(data){
+ if(!apiUrl)throw Error('예약 시스템 웹 앱 주소가 저장되지 않았습니다. 위의 연결 설정에서 관리자 페이지와 동일한 /exec 주소를 입력해 주세요.');
+ let res;
+ try{
+  res=await fetch(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(data)});
+ }catch(err){
+  throw Error('서버에 연결하지 못했습니다. 웹 앱 주소(/exec)가 정확한지, 배포 접근 권한이 모든 사용자로 설정되어 있는지 확인해 주세요. ('+(err.message||'네트워크 오류')+')');
+ }
+ const raw=await res.text();
+ let result;
+ try{result=JSON.parse(raw)}catch(err){
+  throw Error('서버 응답을 JSON으로 읽지 못했습니다. 웹 앱 URL이 맞는지, 최신 배포 주소인지 확인해 주세요. 응답 앞부분: '+raw.slice(0,120));
+ }
+ if(!res.ok)throw Error('서버 통신 오류 (HTTP '+res.status+').');
+ if(!result.ok)throw Error(result.error||'서버에서 요청을 처리하지 못했습니다.');
+ return result;
+}
+function notice(id,msg,type=''){const el=$(id);el.textContent=msg;el.className='notice '+type}
+function isContinuous(arr){if(!arr.length)return true;const a=[...arr].sort();for(let i=1;i<a.length;i++){const [h1,m1]=a[i-1].split(':').map(Number),[h2,m2]=a[i].split(':').map(Number);if(h2*60+m2-h1*60-m1!==60)return false;}return true}
+function slotRangeLabel(time){
+ const parts=String(time).split(':').map(Number);
+ const startMinutes=parts[0]*60+parts[1];
+ const endMinutes=startMinutes+60;
+ if(!Number.isFinite(startMinutes)||startMinutes<0||startMinutes>=1440||endMinutes>1440)return String(time);
+ const end=endMinutes===1440?'24:00':String(Math.floor(endMinutes/60)).padStart(2,'0')+':'+String(endMinutes%60).padStart(2,'0');
+ return `${time} – ${end}`;
+}
+function renderSlots(slots){
+ const root=$('slots');root.innerHTML='';
+ if(!slots.length){root.innerHTML='<div class="empty" style="grid-column:1/-1">운영 가능한 시간이 없습니다.</div>';return}
+ slots.forEach(s=>{
+  const b=document.createElement('button');b.type='button';b.className='slot'+(selectedSlots.includes(s.time)?' selected':'');b.disabled=!s.available&&!selectedSlots.includes(s.time);
+  b.innerHTML=`${slotRangeLabel(s.time)}<small>${s.available?'예약 가능':'예약 완료'}</small>`;
+  b.addEventListener('click',()=>{
+   const next=selectedSlots.includes(s.time)?selectedSlots.filter(x=>x!==s.time):[...selectedSlots,s.time];
+   if(!isContinuous(next)){notice('bookingNotice','연속된 시간만 한 번에 선택할 수 있습니다.','err');return}
+   selectedSlots=next.sort();notice('bookingNotice','');renderSlots(slots);
+  });root.appendChild(b);
+ });
+}
+async function loadAvailability(){
+ selectedSlots=[];
+ const date=$('reserveDate').value;
+ if(!date){notice('bookingNotice','예약 날짜를 먼저 선택해 주세요.');return}
+ notice('bookingNotice','시간 정보를 불러오는 중입니다.');
+ $('slots').innerHTML='<div class="empty" style="grid-column:1/-1">서버에서 예약 가능 시간을 확인하고 있습니다.</div>';
+ try{
+  const r=await api({action:'availability',date});
+  if(!Array.isArray(r.slots))throw Error('서버 응답에 slots 시간 목록이 없습니다. 서버 배포 버전을 확인해 주세요.');
+  renderSlots(r.slots);
+  notice('bookingNotice',r.slots.length?'예약 가능한 시간을 선택해 주세요.':'선택한 날짜에는 운영 가능한 시간이 없습니다.',r.slots.length?'ok':'');
+ }catch(e){
+  $('slots').innerHTML='<div class="empty" style="grid-column:1/-1">시간 정보를 불러오지 못했습니다.</div>';
+  notice('bookingNotice','오류 내용: '+e.message,'err');
+ }
+}
+$('reserveDate').addEventListener('change',loadAvailability);
+$('clearBtn').addEventListener('click',()=>{selectedSlots=[];editingBookingId='';loadAvailability()});
+async function lookupBookings(){
+ try{
+  const info=studentInfo('lookupName','lookupSeat'),pin=pinValue('lookupPin');
+  const r=await api({action:'myBookings',studentInfo:info,pin});myBookings=r.bookings||[];
+  renderMyBookings();notice('lookupNotice',myBookings.length?`예약 ${myBookings.length}건을 찾았습니다.`:'현재 예약된 내역이 없습니다.','ok');
+ }catch(e){$('myBookings').innerHTML='<div class="empty">인증 후 예약 내역을 확인할 수 있습니다.</div>';notice('lookupNotice',e.message,'err')}
+}
+function renderMyBookings(){
+ const root=$('myBookings');root.innerHTML='';
+ if(!myBookings.length){root.innerHTML='<div class="empty">현재 예약된 내역이 없습니다.</div>';return}
+ myBookings.forEach(b=>{
+  const item=document.createElement('div');item.className='booking';
+  const info=document.createElement('div');const strong=document.createElement('strong');strong.textContent=b.date;
+  const span=document.createElement('span');span.textContent=`${b.start} – ${b.end}`;info.append(strong,span);
+  const tools=document.createElement('div');tools.className='tools';
+  const edit=document.createElement('button');edit.className='secondary';edit.textContent='시간 변경';
+  edit.onclick=()=>{editingBookingId=b.bookingId;$('reserveDate').value=b.date;$('studentName').value=$('lookupName').value;$('seatNo').value=$('lookupSeat').value;$('pin').value=$('lookupPin').value;loadAvailability().then(()=>{const start=parseInt(b.start.slice(0,2),10),end=parseInt(b.end.slice(0,2),10);selectedSlots=[];for(let h=start;h<end;h++)selectedSlots.push(String(h).padStart(2,'0')+':00');return api({action:'availability',date:b.date})}).then(r=>{renderSlots(r.slots||[]);selectedSlots=[];for(let h=parseInt(b.start.slice(0,2),10);h<parseInt(b.end.slice(0,2),10);h++)selectedSlots.push(String(h).padStart(2,'0')+':00');renderSlots(r.slots||[]);$('bookBtn').textContent='예약 변경 저장';notice('bookingNotice','변경할 시간대를 선택한 뒤 저장하세요.');window.scrollTo({top:0,behavior:'smooth'})}).catch(e=>notice('bookingNotice',e.message,'err'))};
+  const cancel=document.createElement('button');cancel.className='secondary';cancel.textContent='취소';
+  cancel.onclick=async()=>{if(!confirm(`${b.date} ${b.start} 예약을 취소할까요?`))return;try{await api({action:'cancel',bookingId:b.bookingId,studentInfo:studentInfo('lookupName','lookupSeat'),pin:pinValue('lookupPin')});notice('lookupNotice','예약이 취소되었습니다.','ok');await lookupBookings();await loadAvailability()}catch(e){notice('lookupNotice',e.message,'err')}};
+  tools.append(edit,cancel);item.append(info,tools);root.appendChild(item);
+ });
+}
+async function updateBooking(){
+ try{const info=studentInfo('studentName','seatNo'),pin=pinValue('pin');if(!selectedSlots.length)throw Error('변경할 시간을 선택해 주세요.');await api({action:'update',bookingId:editingBookingId,studentInfo:info,pin,slots:selectedSlots});notice('bookingNotice','예약 시간이 변경되었습니다.','ok');editingBookingId='';$('bookBtn').textContent='예약 신청하기';await loadAvailability();await lookupBookings()}
+ catch(e){notice('bookingNotice',e.message,'err')}
+}
+async function bookHandler(){if(editingBookingId){await updateBooking();return}try{const info=studentInfo('studentName','seatNo'),pin=pinValue('pin');if(!selectedSlots.length)throw Error('예약할 시간을 선택해 주세요.');$('bookBtn').disabled=true;const r=await api({action:'book',date:$('reserveDate').value,slots:selectedSlots,studentInfo:info,pin});notice('bookingNotice',r.message||'예약이 완료되었습니다.','ok');$('lookupName').value=$('studentName').value;$('lookupSeat').value=$('seatNo').value;$('lookupPin').value=pin;selectedSlots=[];await loadAvailability();await lookupBookings()}catch(e){notice('bookingNotice',e.message,'err')}finally{$('bookBtn').disabled=false}}
+$('bookBtn').addEventListener('click',bookHandler);
+$('lookupBtn').addEventListener('click',lookupBookings);
+loadAvailability();
+</script>
+</body>
+</html>
