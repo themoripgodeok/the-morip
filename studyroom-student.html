@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#22211f"><title>스터디룸 예약 · 24시 지원</title>
+<meta name="theme-color" content="#22211f"><meta name="autocomplete" content="off"><title>스터디룸 예약</title>
 <style>
 :root{--ink:#25231f;--muted:#817c72;--paper:#f6f4ef;--card:#fffefa;--line:#e8e3d9;--gold:#a88950;--green:#52765e;--red:#a34f45;--shadow:0 18px 50px rgba(44,38,27,.08)}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,"Noto Sans KR","Malgun Gothic",sans-serif;letter-spacing:-.025em}
@@ -33,7 +33,7 @@ footer{text-align:center;color:#9a9489;font-size:10px;letter-spacing:.08em;paddi
 <main>
 <section class="card">
 <h2>예약 신청</h2><p class="sub">학생 정보와 휴대폰 뒷번호 4자리를 입력한 뒤 날짜와 시간을 선택해 주세요. 첫 예약 시 회원으로 자동 등록됩니다. 예약은 1시간 단위이며 연속된 시간으로 신청할 수 있습니다.</p>
-<div class="identity"><div><label for="studentName">학생 이름</label><input id="studentName" maxlength="40" placeholder="이름 입력" autocomplete="name"></div><div><label for="seatNo">좌석 번호</label><input id="seatNo" maxlength="12" placeholder="예: 12번"></div></div>
+<div class="identity"><div><label for="studentName">학생 이름</label><input id="studentName" maxlength="40" placeholder="이름 입력" autocomplete="new-password"></div><div><label for="seatNo">좌석 번호</label><input id="seatNo" maxlength="12" placeholder="예: 12번"></div></div>
 <label for="pin">휴대폰 뒷번호 4자리</label><input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="휴대폰 뒷번호 4자리" autocomplete="new-password">
 <div class="datebar"><label for="reserveDate">예약 날짜</label><input id="reserveDate" type="date"></div>
 <div class="slots" id="slots"><div class="empty" style="grid-column:1/-1">날짜를 선택하면 예약 가능한 시간이 표시됩니다.</div></div>
