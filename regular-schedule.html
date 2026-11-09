@@ -97,7 +97,7 @@ document.getElementById("scheduleForm").addEventListener("submit",e=>{
   if(off){answers[key]="미등원";continue}
   if(!start||!finish){alert(label+" 등원시간과 퇴실시간을 모두 선택해 주세요. 또는 미등원을 체크해 주세요.");return}
   if(finish<=start){alert(label+" 퇴실시간은 등원시간보다 늦어야 합니다.");return}
-  answers[key]=`${start} - ${finish} (독서실 등원)`;
+  answers[key]=`${start} - ${finish} (더몰입 등원)`;
  }
  const post=document.createElement("form");post.method="POST";post.action=FORM_ACTION;post.target="_self";
  Object.entries(answers).forEach(([key,value])=>{const input=document.createElement("input");input.type="hidden";input.name="entry."+ENTRY[key];input.value=value;post.appendChild(input)});
