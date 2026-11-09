@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101a2b">
+<title>사유 일정 등록 | 더몰입 관리형 독서실</title>
+<style>
+:root{--navy:#101a2b;--navy2:#1a2b45;--gold:#c9a96e;--ink:#202b3b;--muted:#697586;--line:#e1e5eb;--bg:#f3f5f8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{width:min(100% - 24px,680px);margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 0 max(28px,env(safe-area-inset-bottom))}
+header{padding:25px 23px;border-radius:20px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;box-shadow:0 12px 28px #101a2b20}
+.eyebrow{margin:0 0 9px;color:#ead9b5;font-size:11px;font-weight:700;letter-spacing:.16em}h1{margin:0;font-size:27px;letter-spacing:-.05em}header p:last-child{margin:10px 0 0;color:#ffffffc9;font-size:13px;line-height:1.65;word-break:keep-all}
+.notice{margin:15px 0;padding:17px 18px;border:1px solid #e7dfd0;border-radius:15px;background:#fffdf9;font-size:13px;line-height:1.75;word-break:keep-all}.notice strong{display:block;margin-bottom:8px;color:#4a3d29;font-size:14px}.notice p{margin:4px 0}.notice .warn{margin-top:10px;color:#9a4a38;font-weight:700}
+form{display:grid;gap:13px}.section{padding:19px 18px;border:1px solid var(--line);border-radius:16px;background:white;box-shadow:0 3px 12px #18273c06}.section h2{margin:0 0 6px;font-size:16px;letter-spacing:-.03em}.desc{margin:0 0 14px;color:var(--muted);font-size:12px;line-height:1.6;word-break:keep-all}.required{color:#b64b3d;margin-left:3px}
+input[type=text],textarea{width:100%;border:1px solid #d7dde5;border-radius:10px;padding:13px 12px;font:inherit;font-size:15px;color:var(--ink);background:#fff;outline:none}input[type=text]:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px #c9a96e24}textarea{min-height:120px;resize:vertical;line-height:1.6}
+.options{display:grid;gap:10px}.option{display:flex;align-items:flex-start;gap:10px;min-height:26px;font-size:14px;line-height:1.5;cursor:pointer}.option input{width:18px;height:18px;margin:1px 0 0;flex:0 0 18px;accent-color:#9b7944}.option span{word-break:keep-all}
+.date-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}.date{display:grid;place-items:center;min-height:40px;border:1px solid #dfe4eb;border-radius:9px;font-size:13px;cursor:pointer}.date:has(input:checked){border-color:#b8955e;background:#f8f3e9;color:#6c5128;font-weight:700}.date input{position:absolute;opacity:0;pointer-events:none}
+.periods{display:grid;grid-template-columns:1fr 1fr;gap:10px}.period{display:flex;align-items:center;gap:9px;padding:11px 10px;border:1px solid #e1e5eb;border-radius:10px;font-size:12px;line-height:1.45;cursor:pointer}.period input{width:17px;height:17px;flex:0 0 17px;margin:0;accent-color:#9b7944}.period:has(input:checked){border-color:#b8955e;background:#f8f3e9}
+.other{margin-top:10px;display:none}.other.show{display:block}.ack{padding:13px;border-radius:10px;background:#f7f8fa}
+button{width:100%;min-height:52px;border:0;border-radius:12px;background:var(--navy);color:#fff;font-size:16px;font-weight:750;cursor:pointer}button:disabled{opacity:.55}
+.error{display:none;padding:12px 14px;border-radius:10px;background:#fff1ef;color:#a33e30;font-size:13px;line-height:1.5}.error.show{display:block}
+@media(max-width:420px){.periods{grid-template-columns:1fr}.section{padding:17px 15px}.date-grid{gap:6px}.date{min-height:38px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><p class="eyebrow">THE MORIP · SCHEDULE APPLICATION</p><h1>사유 일정 등록</h1><p>정기일정에 등록되지 않은 결석·지각·조퇴·외출 사유를 제출해 주세요.</p></header>
+<section class="notice">
+<strong>사유 제출 안내</strong>
+<p>1. 정기 개인일정 외에 등원으로 제출했지만 방문하지 못하는 경우 사유 제출이 필요합니다.</p>
+<p>2. 제출 내용을 검토한 후 학부모 승인 요청 메시지가 발송됩니다.</p>
+<p>3. 학부모 승인 후 사유에 따라 벌점이 차등 부여됩니다.</p>
+<p>4. 학업 외 사유는 사유 벌점이 부여됩니다. (병원은 영수증 제출 시 0점)</p>
+<p class="warn">사유일정 미제출 시 출석 벌점이 누적될 수 있습니다. 구두·전화·메시지로는 인정되지 않습니다.</p>
+<p>• 사유가 있는 날짜와 불참하는 교시를 모두 선택해 주세요.</p>
+<p>• 이동시간을 고려해 해당 교시 중 나가야 하는 경우에도 그 교시를 선택해 주세요.</p>
+<p>• 날짜를 여러 개 선택하는 경우 미등원 시간이 동일해야 합니다. 날짜별 시간이 다르면 별도로 제출해 주세요.</p>
+<p>• 구체적인 사유를 작성해 주세요. 수기 제출은 데스크로 방문해 주세요.</p>
+</section>
+<form id="reasonForm" action="https://docs.google.com/forms/d/e/1FAIpQLSf3a-yNM0IiuSCnokRbdfEHQcM6DSs_tqIIMB5Dz1g3LU0e3g/formResponse" method="POST" target="_self">
+<section class="section">
+<h2>이름과 좌석번호<span class="required">*</span></h2><p class="desc">예: 홍길동(10)</p>
+<input id="student" type="text" autocomplete="name" placeholder="이름(좌석번호)" required>
+</section>
+<section class="section">
+<h2>사유 선택<span class="required">*</span></h2><p class="desc">해당하는 사유를 하나 선택해 주세요.</p>
+<div class="options" id="reasonOptions">
+<label class="option"><input type="radio" name="reason" value="사유지각"><span>사유지각</span></label>
+<label class="option"><input type="radio" name="reason" value="사유결석"><span>사유결석</span></label>
+<label class="option"><input type="radio" name="reason" value="사유외출"><span>사유외출</span></label>
+<label class="option"><input type="radio" name="reason" value="사유조퇴"><span>사유조퇴</span></label>
+<label class="option"><input type="radio" name="reason" value="기타"><span>기타</span></label>
+</div>
+<div class="other" id="otherWrap"><input id="otherReason" type="text" placeholder="기타 사유를 입력해 주세요."></div>
+</section>
+<section class="section">
+<h2>해당 날짜<span class="required">*</span></h2><p class="desc">동일한 시간에 미등원하는 날짜를 모두 선택해 주세요. 날짜마다 미등원 시간이 다르면 별도 제출해 주세요.</p>
+<div class="date-grid" id="dateGrid"></div>
+</section>
+<section class="section">
+<h2>미등원 교시<span class="required">*</span></h2><p class="desc">이동시간을 고려해 센터에 도착하는 시간을 기준으로 선택해 주세요.</p>
+<div class="periods" id="periodGrid"></div>
+</section>
+<section class="section">
+<h2>자세한 사유<span class="required">*</span></h2><p class="desc">구체적인 사유를 작성해 주세요.</p>
+<textarea id="detail" placeholder="예: 학원 보강으로 1교시 지각합니다." required></textarea>
+</section>
+<section class="section">
+<h2>수정 제출 확인<span class="required">*</span></h2><p class="desc">이전에 등록한 사유를 수정한 경우, 해당 내용은 학부모에게 알림이 발송됩니다.</p>
+<label class="option ack"><input id="ack" type="checkbox" required><span>예, 확인했습니다.</span></label>
+</section>
+<div class="error" id="error" role="alert"></div>
+<button type="submit" id="submitBtn">사유 일정 제출</button>
+</form>
+</main>
+<script>
+const dateGrid=document.getElementById('dateGrid');
+for(let d=1;d<=31;d++){const label=document.createElement('label');label.className='date';label.innerHTML='<input type="checkbox" name="date" value="'+d+'일"><span>'+d+'일</span>';dateGrid.appendChild(label);}
+const periods=['1교시 [08:00 - 08:45]','2교시 [09:00 - 10:10]','3교시 [10:30 - 11:50]','4교시 [13:10 - 14:30]','5교시 [14:50 - 16:10]','6교시 [16:30 - 17:50]','7교시 [19:10 - 20:30]','8교시 [20:50 - 22:00]','전 교시 미등원'];
+const periodGrid=document.getElementById('periodGrid');
+periods.forEach((p,i)=>{const label=document.createElement('label');label.className='period';label.innerHTML='<input type="checkbox" name="period" value="'+p+'" data-all="'+(i===8)+'"><span>'+p+'</span>';periodGrid.appendChild(label);});
+const periodChecks=[...document.querySelectorAll('input[name="period"]')];
+periodChecks.forEach(ch=>ch.addEventListener('change',()=>{if(ch.checked&&ch.dataset.all==='true')periodChecks.forEach(x=>{if(x!==ch)x.checked=false;});else if(ch.checked)periodChecks.forEach(x=>{if(x.dataset.all==='true')x.checked=false;});}));
+document.querySelectorAll('input[name="reason"]').forEach(r=>r.addEventListener('change',()=>{const show=r.value==='기타'&&r.checked;document.getElementById('otherWrap').classList.toggle('show',show);document.getElementById('otherReason').required=show;}));
+const form=document.getElementById('reasonForm');
+form.addEventListener('submit',e=>{
+ e.preventDefault();
+ const err=document.getElementById('error');err.classList.remove('show');
+ const reason=document.querySelector('input[name="reason"]:checked');
+ const dates=[...document.querySelectorAll('input[name="date"]:checked')].map(x=>x.value);
+ const selectedPeriods=periodChecks.filter(x=>x.checked).map(x=>x.value);
+ if(!document.getElementById('student').value.trim()){showError('이름과 좌석번호를 입력해 주세요.');return;}
+ if(!reason){showError('사유를 선택해 주세요.');return;}
+ if(reason.value==='기타'&&!document.getElementById('otherReason').value.trim()){showError('기타 사유를 입력해 주세요.');return;}
+ if(!dates.length){showError('해당 날짜를 선택해 주세요.');return;}
+ if(!selectedPeriods.length){showError('미등원 교시를 선택해 주세요.');return;}
+ if(!document.getElementById('detail').value.trim()){showError('자세한 사유를 작성해 주세요.');return;}
+ if(!document.getElementById('ack').checked){showError('수정 제출 확인 항목을 체크해 주세요.');return;}
+ const fields=[];
+ const add=(name,value)=>{const input=document.createElement('input');input.type='hidden';input.name=name;input.value=value;fields.push(input);};
+ add('entry.1884265043',document.getElementById('student').value.trim());
+ if(reason.value==='기타'){add('entry.1330622282','__other_option__');add('entry.1330622282.other_option_response',document.getElementById('otherReason').value.trim());}
+ else add('entry.1330622282',reason.value);
+ dates.forEach(v=>add('entry.1716508254',v));
+ selectedPeriods.forEach(v=>add('entry.1138881790',v));
+ add('entry.492490073',document.getElementById('detail').value.trim());
+ add('entry.1170848414','예');
+ fields.forEach(x=>form.appendChild(x));
+ const btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='제출 중...';
+ form.submit();
+ function showError(message){err.textContent=message;err.classList.add('show');err.scrollIntoView({behavior:'smooth',block:'center'});}
+});
+</script>
+</body>
+</html>
