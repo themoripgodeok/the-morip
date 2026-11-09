@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>더몰입 정기일정 등록</title>
+<style>
+:root{--navy:#14243b;--blue:#2e5b91;--line:#dce3eb;--bg:#f4f7fb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:"Noto Sans KR",Arial,sans-serif;color:#1d2938}
+.wrap{max-width:720px;margin:0 auto;padding:20px 14px 40px}
+header{background:linear-gradient(135deg,#14243b,#294b76);color:white;padding:25px 22px;border-radius:16px;margin-bottom:16px}
+header h1{font-size:22px;margin:0 0 8px}header p{font-size:13px;line-height:1.7;margin:0;color:#e4edf7}
+.card{background:white;border:1px solid var(--line);border-radius:14px;padding:18px;margin:12px 0}
+label.title{font-weight:700;display:block;margin-bottom:10px}
+input[type=text],select{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:white;font-size:15px;color:#172334}
+.dayhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.dayhead strong{font-size:17px}
+.off{font-size:14px;display:flex;align-items:center;gap:7px;color:#4b5563}
+.times{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+small{display:block;color:#64748b;margin:6px 0 0;font-size:12px}
+.disabled{opacity:.45}
+button{width:100%;border:0;border-radius:11px;background:#234a78;color:white;padding:16px;font-size:16px;font-weight:700;cursor:pointer}
+.note{font-size:13px;line-height:1.7;color:#536174}
+#status{margin-top:12px;font-size:14px;line-height:1.6}
+@media(max-width:420px){.times{grid-template-columns:1fr 1fr}.card{padding:15px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>더몰입 정기일정 등록</h1>
+<p>매월 1일 제출하는 한 달 고정 정기일정입니다.<br>독서실 실제 도착시간과 퇴실시간을 입력해 주세요.<br>변동사항은 관리자 사무실에서 수정 바랍니다.</p>
+</header>
+<form id="scheduleForm">
+<div class="card">
+<label class="title" for="student">이름 및 좌석번호</label>
+<input id="student" type="text" placeholder="예: 홍길동(10)" required>
+</div>
+<div id="days"></div>
+<div class="card note">
+<strong>제출 안내</strong><br>
+• 평일 운영시간: 08:00~22:00 / 토요일: 08:00~18:00<br>
+• 이동시간을 고려하여 독서실 도착·퇴실 시간을 입력해 주세요.<br>
+• 개인 일정으로 등원하지 않는 요일은 ‘미등원’을 체크해 주세요.<br>
+• 제출 내용 검토 후 학부모 승인 요청 메시지가 발송됩니다.
+</div>
+<button type="submit">정기일정 제출</button>
+<div id="status" role="status"></div>
+</form>
+</div>
+<script>
+const FORM_ACTION="https://docs.google.com/forms/d/e/1FAIpQLSfZHqHouewBnOnc0-1WBxb6hsjCvj8ZuZ2kIKXJoV-RYeKqHw/formResponse";
+const ENTRY={student:"1884265043",monday:"1716508254",tuesday:"1138881790",wednesday:"492490073",thursday:"1170848414",friday:"558754052",saturday:"1647835017"};
+const weekdays=[["monday","월요일",22],["tuesday","화요일",22],["wednesday","수요일",22],["thursday","목요일",22],["friday","금요일",22],["saturday","토요일",18]];
+const days=document.getElementById("days");
+function times(endHour){let arr=[];for(let h=8;h<=endHour;h++){arr.push(String(h).padStart(2,"0")+":00");if(h<endHour)arr.push(String(h).padStart(2,"0")+":30")}return arr}
+weekdays.forEach(([key,label,end])=>{
+ const card=document.createElement("section");card.className="card";card.id="card-"+key;
+ card.innerHTML=`<div class="dayhead"><strong>${label}</strong><label class="off"><input type="checkbox" id="${key}-off"> 미등원</label></div>
+ <div class="times"><div><label for="${key}-start">등원시간</label><select id="${key}-start"><option value="">선택</option></select></div>
+ <div><label for="${key}-end">퇴실시간</label><select id="${key}-end"><option value="">선택</option></select></div></div>
+ <small>독서실 실제 도착 및 퇴실 기준 (30분 단위)</small>`;
+ days.appendChild(card);
+ const start=document.getElementById(key+"-start"), finish=document.getElementById(key+"-end");
+ times(end).forEach(t=>{start.add(new Option(t,t));finish.add(new Option(t,t))});
+ const off=document.getElementById(key+"-off");
+ off.addEventListener("change",()=>{start.disabled=finish.disabled=off.checked;card.querySelector(".times").classList.toggle("disabled",off.checked);});
+});
+document.getElementById("scheduleForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const name=document.getElementById("student").value.trim();
+ if(!name){alert("이름 및 좌석번호를 입력해 주세요.");return}
+ const answers={student:name};
+ for(const [key,label,end] of weekdays){
+  const off=document.getElementById(key+"-off").checked;
+  const start=document.getElementById(key+"-start").value, finish=document.getElementById(key+"-end").value;
+  if(off){answers[key]="미등원";continue}
+  if(!start||!finish){alert(label+" 등원시간과 퇴실시간을 모두 선택해 주세요. 또는 미등원을 체크해 주세요.");return}
+  if(finish<=start){alert(label+" 퇴실시간은 등원시간보다 늦어야 합니다.");return}
+  answers[key]=`${start} - ${finish} (독서실 등원)`;
+ }
+ // 새 탭에서 Google Form의 실제 제출 완료 화면을 표시합니다.
+ const post=document.createElement("form");post.method="POST";post.action=FORM_ACTION;post.target="_blank";
+ Object.entries(answers).forEach(([key,value])=>{const input=document.createElement("input");input.type="hidden";input.name="entry."+ENTRY[key];input.value=value;post.appendChild(input)});
+ document.body.appendChild(post);
+ document.getElementById("status").textContent="새 탭에서 Google Form 제출 완료 화면을 확인해 주세요. 완료 메시지가 표시되면 접수된 것입니다.";
+ post.submit();post.remove();
+});
+</script>
+</body>
+</html>
