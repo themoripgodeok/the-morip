@@ -80,7 +80,7 @@ document.getElementById("scheduleForm").addEventListener("submit",e=>{
   answers[key]=`${start} - ${finish} (독서실 등원)`;
  }
  // 새 탭에서 Google Form의 실제 제출 완료 화면을 표시합니다.
- const post=document.createElement("form");post.method="POST";post.action=FORM_ACTION;post.target="_blank";
+ const post=document.createElement("form");post.method="POST";post.action=FORM_ACTION;post.target="_self";
  Object.entries(answers).forEach(([key,value])=>{const input=document.createElement("input");input.type="hidden";input.name="entry."+ENTRY[key];input.value=value;post.appendChild(input)});
  document.body.appendChild(post);
  document.getElementById("status").textContent="새 탭에서 Google Form 제출 완료 화면을 확인해 주세요. 완료 메시지가 표시되면 접수된 것입니다.";
