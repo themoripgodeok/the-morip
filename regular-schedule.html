@@ -12,7 +12,19 @@ header{background:linear-gradient(135deg,#14243b,#294b76);color:white;padding:25
 header h1{font-size:22px;margin:0 0 8px}header p{font-size:13px;line-height:1.7;margin:0;color:#e4edf7}
 .card{background:white;border:1px solid var(--line);border-radius:14px;padding:18px;margin:12px 0}
 label.title{font-weight:700;display:block;margin-bottom:10px}
-input[type=text],select{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:white;font-size:15px;color:#172334}
+input[type=text]{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:white;font-size:15px;color:#172334}
+.time-btn{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#172334;text-align:left;font-size:15px;font-weight:400;min-height:46px}
+.time-btn:disabled{opacity:.5;background:#f1f5f9}
+.picker-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.48);z-index:9999;align-items:flex-end;justify-content:center}
+.picker-backdrop.open{display:flex}
+.picker-panel{width:min(100%,520px);max-height:78vh;background:#fff;border-radius:18px 18px 0 0;padding:16px;display:flex;flex-direction:column;box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+.picker-head{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 12px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.picker-title{font-weight:700;font-size:16px}
+.picker-close{width:auto;padding:8px 12px;background:#eef2f7;color:#24364b;font-size:14px}
+.picker-list{overflow-y:auto;overscroll-behavior:contain;display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:4px 2px 12px}
+.time-option{background:#f5f7fa;color:#24364b;border:1px solid #e2e8f0;padding:12px 4px;font-size:15px;font-weight:500}
+.time-option.selected{background:#e5edf7;border-color:#2e5b91;color:#173b65}
+body.picker-open{overflow:hidden}
 .dayhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
 .dayhead strong{font-size:17px}
 .off{font-size:14px;display:flex;align-items:center;gap:7px;color:#4b5563}
@@ -57,15 +69,23 @@ function times(endHour){let arr=[];for(let h=8;h<=endHour;h++){arr.push(String(h
 weekdays.forEach(([key,label,end])=>{
  const card=document.createElement("section");card.className="card";card.id="card-"+key;
  card.innerHTML=`<div class="dayhead"><strong>${label}</strong><label class="off"><input type="checkbox" id="${key}-off"> 미등원</label></div>
- <div class="times"><div><label for="${key}-start">등원시간</label><select id="${key}-start"><option value="">선택</option></select></div>
- <div><label for="${key}-end">퇴실시간</label><select id="${key}-end"><option value="">선택</option></select></div></div>
+ <div class="times"><div><label for="${key}-start-btn">등원시간</label><button type="button" class="time-btn" id="${key}-start-btn">시간 선택</button><input type="hidden" id="${key}-start" value=""></div>
+ <div><label for="${key}-end-btn">퇴실시간</label><button type="button" class="time-btn" id="${key}-end-btn">시간 선택</button><input type="hidden" id="${key}-end" value=""></div></div>
  <small>독서실 실제 도착 및 퇴실 기준 (30분 단위)</small>`;
  days.appendChild(card);
  const start=document.getElementById(key+"-start"), finish=document.getElementById(key+"-end");
- times(end).forEach(t=>{start.add(new Option(t,t));finish.add(new Option(t,t))});
+ const startBtn=document.getElementById(key+"-start-btn"), finishBtn=document.getElementById(key+"-end-btn");
  const off=document.getElementById(key+"-off");
- off.addEventListener("change",()=>{start.disabled=finish.disabled=off.checked;card.querySelector(".times").classList.toggle("disabled",off.checked);});
+ startBtn.addEventListener("click",()=>openPicker(start,startBtn,times(end),label+" 등원시간"));
+ finishBtn.addEventListener("click",()=>openPicker(finish,finishBtn,times(end),label+" 퇴실시간"));
+ off.addEventListener("change",()=>{startBtn.disabled=finishBtn.disabled=off.checked;card.querySelector(".times").classList.toggle("disabled",off.checked);});
 });
+const picker=document.createElement("div");picker.className="picker-backdrop";picker.innerHTML=`<div class="picker-panel" role="dialog" aria-modal="true" aria-label="시간 선택"><div class="picker-head"><span class="picker-title" id="pickerTitle">시간 선택</span><button type="button" class="picker-close" id="pickerClose">닫기</button></div><div class="picker-list" id="pickerList"></div></div>`;document.body.appendChild(picker);
+let activeInput=null,activeButton=null,savedScrollY=0;
+function closePicker(){picker.classList.remove("open");document.body.classList.remove("picker-open");activeInput=null;activeButton=null;window.scrollTo(0,savedScrollY);}
+picker.querySelector("#pickerClose").addEventListener("click",closePicker);
+picker.addEventListener("click",e=>{if(e.target===picker)closePicker()});
+function openPicker(input,button,values,title){activeInput=input;activeButton=button;savedScrollY=window.scrollY;picker.querySelector("#pickerTitle").textContent=title;const list=picker.querySelector("#pickerList");list.innerHTML="";values.forEach(value=>{const option=document.createElement("button");option.type="button";option.className="time-option"+(input.value===value?" selected":"");option.textContent=value;option.addEventListener("click",()=>{input.value=value;button.textContent=value;closePicker()});list.appendChild(option)});picker.classList.add("open");document.body.classList.add("picker-open");}
 document.getElementById("scheduleForm").addEventListener("submit",e=>{
  e.preventDefault();
  const name=document.getElementById("student").value.trim();
@@ -79,8 +99,7 @@ document.getElementById("scheduleForm").addEventListener("submit",e=>{
   if(finish<=start){alert(label+" 퇴실시간은 등원시간보다 늦어야 합니다.");return}
   answers[key]=`${start} - ${finish} (독서실 등원)`;
  }
- // 새 탭에서 Google Form의 실제 제출 완료 화면을 표시합니다.
- const post=document.createElement("form");post.method="POST";post.action=FORM_ACTION;post.target="_self";
+ const post=document.createElement("form");post.method="POST";post.action=FORM_ACTION;post.target="_blank";
  Object.entries(answers).forEach(([key,value])=>{const input=document.createElement("input");input.type="hidden";input.name="entry."+ENTRY[key];input.value=value;post.appendChild(input)});
  document.body.appendChild(post);
  document.getElementById("status").textContent="새 탭에서 Google Form 제출 완료 화면을 확인해 주세요. 완료 메시지가 표시되면 접수된 것입니다.";
