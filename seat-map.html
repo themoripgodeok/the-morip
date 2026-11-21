@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101a2b"><title>좌석 배치 편집기 | 더몰입</title>
+<style>
+:root{--navy:#101a2b;--navy2:#1a2b45;--gold:#c9a96e;--ink:#202b3b;--muted:#697586;--line:#dce2e9;--bg:#f3f5f8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+header{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header a{color:#ead9b5;text-decoration:none;font-size:13px}h1{font-size:20px;margin:0}header p{font-size:12px;color:#c5ccd6;margin:5px 0 0}
+main{max-width:1500px;margin:auto;padding:16px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+button,.filelabel{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:9px 13px;font-size:13px;font-weight:650;cursor:pointer}
+button.primary{background:var(--navy);border-color:var(--navy);color:#fff}button.danger{color:#b42318}button:disabled{opacity:.4;cursor:not-allowed}
+.toolsep{width:1px;height:28px;background:var(--line);margin:0 3px}.hint{font-size:12px;color:var(--muted);margin-left:auto}
+.workspace{display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px;align-items:start}
+.panel,.stagewrap{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.panel{padding:15px}.panel h2{font-size:14px;margin:0 0 12px}.panel label{display:block;font-size:12px;color:var(--muted);margin:12px 0 5px}
+input,select{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;background:#fff}
+.panel button{width:100%;margin-top:8px}.small{font-size:11px;color:var(--muted);line-height:1.6;margin-top:12px}
+.stagehead{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}.stagehead strong{font-size:13px}.stagehead span{font-size:12px;color:var(--muted)}
+.viewport{height:min(72vh,850px);min-height:480px;overflow:auto;background-color:#f8fafc;background-image:linear-gradient(#e9edf2 1px,transparent 1px),linear-gradient(90deg,#e9edf2 1px,transparent 1px);background-size:24px 24px;position:relative;touch-action:pan-x pan-y}
+#board{position:relative;width:1800px;height:1100px;transform-origin:0 0}
+.seat{position:absolute;width:112px;height:72px;border:1.5px solid #b9c3cf;border-radius:7px;background:#fff;box-shadow:0 2px 5px #1b2b4012;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:grab;user-select:none;touch-action:none}
+.seat:active{cursor:grabbing}.seat.selected{outline:3px solid #c9a96e;outline-offset:2px;z-index:10}
+.seat .num{font-size:11px;color:#7b8796}.seat .name{font-size:13px;font-weight:750;margin-top:3px;max-width:95%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seat .status{font-size:11px;font-weight:800;margin-top:3px}.seat.status-in{border-color:#16a34a;background:#f0fdf4}.seat.status-out{border-color:#3b82f6;background:#eff6ff}.seat.status-abs{border-color:#dc2626;background:#fef2f2}
+.seat .resize{position:absolute;right:1px;bottom:1px;width:13px;height:13px;border-right:3px solid #9aa5b1;border-bottom:3px solid #9aa5b1;cursor:nwse-resize}
+.viewmode .seat{cursor:default}.viewmode .seat .resize{display:none}
+.stats{display:flex;gap:8px;flex-wrap:wrap}.stat{background:#f7f8fa;border-radius:8px;padding:7px 10px;font-size:12px}.stat b{font-size:15px;margin-right:4px}
+@media(max-width:760px){main{padding:10px}.workspace{grid-template-columns:1fr}.panel{order:2}.viewport{height:62vh;min-height:400px}.hint{width:100%;margin:0}header{padding:15px}}
+</style></head>
+<body>
+<header><div><h1>더몰입 좌석 배치</h1><p>좌석을 직접 배치하고 저장하는 편집기</p></div><a href="index.html">안내센터로 돌아가기 ←</a></header>
+<main>
+<div class="toolbar">
+<button class="primary" id="addBtn">＋ 좌석 추가</button><button id="copyBtn">좌석 복사</button><button class="danger" id="deleteBtn">삭제</button><span class="toolsep"></span>
+<button id="editBtn">편집 모드</button><button id="viewBtn">현황 보기</button><span class="toolsep"></span>
+<button id="saveBtn" class="primary">저장</button><button id="loadBtn">불러오기</button><button id="exportBtn">파일로 저장</button><label class="filelabel" for="importFile">파일 가져오기</label><input id="importFile" type="file" accept="application/json" hidden>
+<span class="hint" id="saveState">이 브라우저에 저장됩니다.</span>
+</div>
+<div class="workspace">
+<aside class="panel">
+<h2>선택한 좌석 설정</h2>
+<div id="emptyHelp" class="small">좌석을 추가하거나 배치된 좌석을 선택하세요.</div>
+<div id="seatForm" hidden>
+<label for="seatNo">좌석번호</label><input id="seatNo" maxlength="20" placeholder="예: 101">
+<label for="seatName">학생 이름 (선택)</label><input id="seatName" maxlength="30" placeholder="학생 배정 시 입력">
+<label for="seatWidth">좌석 너비</label><input id="seatWidth" type="number" min="64" max="240" step="4">
+<label for="seatHeight">좌석 높이</label><input id="seatHeight" type="number" min="48" max="180" step="4">
+<label for="seatStatus">표시 상태</label><select id="seatStatus"><option value="">미지정</option><option value="in">출석</option><option value="out">퇴실</option><option value="abs">결석</option></select>
+<button id="applyBtn" class="primary">설정 적용</button>
+</div>
+<hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+<h2>좌석표 도구</h2>
+<label for="zoom">화면 확대·축소</label><input id="zoom" type="range" min="50" max="150" value="100">
+<button id="addRowBtn">좌석 10개 한 줄 추가</button>
+<button id="renumberBtn">좌석번호 일괄 지정</button>
+<label for="startNo">일괄 지정 시작 번호</label><input id="startNo" value="101">
+<div class="small">좌석은 100개 이상 추가할 수 있습니다. 좌석을 드래그해 이동하고 오른쪽 아래 모서리를 끌어 크기를 바꾸세요. 저장 데이터는 현재 브라우저에 보관됩니다.</div>
+</aside>
+<section class="stagewrap">
+<div class="stagehead"><strong>학습실 배치 영역</strong><div class="stats"><span class="stat"><b id="count">0</b>석</span><span class="stat">선택 <b id="selectedText">없음</b></span></div></div>
+<div class="viewport" id="viewport"><div id="board"></div></div>
+</section>
+</div>
+</main>
+<script>
+(function(){
+const $=id=>document.getElementById(id), board=$('board'), viewport=$('viewport');
+let seats=[],selected=null,mode='edit',zoom=1,drag=null;
+const KEY='themorip-seat-layout-v1';
+function makeSeat(no,x,y){return {id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),no:String(no),name:'',x,y,w:112,h:72,status:''}}
+function render(){
+ board.innerHTML='';
+ seats.forEach(s=>{
+  const el=document.createElement('div');el.className='seat'+(selected===s.id?' selected':'')+(s.status?' status-'+s.status:'');el.style.cssText='left:'+s.x+'px;top:'+s.y+'px;width:'+s.w+'px;height:'+s.h+'px';
+  const num=document.createElement('div');num.className='num';num.textContent=s.no+'번';
+  const name=document.createElement('div');name.className='name';name.textContent=s.name||'빈 좌석';
+  const status=document.createElement('div');status.className='status';status.textContent=s.status==='in'?'출석':s.status==='out'?'퇴실':s.status==='abs'?'결석':'';
+  el.append(num,name,status);
+  if(mode==='edit'){const handle=document.createElement('i');handle.className='resize';el.append(handle)}
+  el.addEventListener('pointerdown',e=>startPointer(e,s,el));
+  el.addEventListener('click',e=>{e.stopPropagation();if(!drag?.moved){selected=s.id;render();fillForm()}});
+  board.append(el);
+ });
+ board.style.transform='scale('+zoom+')';$('count').textContent=seats.length;$('selectedText').textContent=seats.find(s=>s.id===selected)?.no||'없음';
+ $('editBtn').disabled=mode==='edit';$('viewBtn').disabled=mode==='view';document.body.classList.toggle('viewmode',mode==='view');
+}
+function startPointer(e,s,el){
+ if(mode!=='edit')return;e.preventDefault();e.stopPropagation();
+ const resize=e.target.classList.contains('resize');selected=s.id;fillForm();
+ const rect=board.getBoundingClientRect();
+ drag={id:s.id,resize,startX:e.clientX,startY:e.clientY,x:s.x,y:s.y,w:s.w,h:s.h,moved:false};
+ el.setPointerCapture(e.pointerId);
+ el.onpointermove=ev=>{if(!drag)return;const dx=(ev.clientX-drag.startX)/zoom,dy=(ev.clientY-drag.startY)/zoom;if(Math.abs(dx)+Math.abs(dy)>3)drag.moved=true;
+ if(resize){s.w=Math.max(64,Math.min(240,drag.w+dx));s.h=Math.max(48,Math.min(180,drag.h+dy))}
+ else{s.x=Math.max(0,drag.x+dx);s.y=Math.max(0,drag.y+dy)}
+ el.style.left=s.x+'px';el.style.top=s.y+'px';el.style.width=s.w+'px';el.style.height=s.h+'px';
+ };
+ el.onpointerup=()=>{drag=null;render();fillForm()};
+}
+function fillForm(){const s=seats.find(v=>v.id===selected);$('emptyHelp').hidden=!!s;$('seatForm').hidden=!s;if(!s)return;$('seatNo').value=s.no;$('seatName').value=s.name;$('seatWidth').value=Math.round(s.w);$('seatHeight').value=Math.round(s.h);$('seatStatus').value=s.status||''}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({version:1,seats}));$('saveState').textContent='저장 완료 · '+new Date().toLocaleTimeString('ko-KR');}catch(e){alert('저장하지 못했습니다. 브라우저 저장 공간을 확인해 주세요.')}}
+function load(){try{const raw=localStorage.getItem(KEY);if(!raw){alert('저장된 좌석표가 없습니다.');return}const data=JSON.parse(raw);if(!Array.isArray(data.seats))throw Error();seats=data.seats;selected=null;render();fillForm();$('saveState').textContent='저장된 좌석표를 불러왔습니다.'}catch(e){alert('저장 데이터를 읽을 수 없습니다.')}}
+$('addBtn').onclick=()=>{let n=1;while(seats.some(s=>s.no===String(n)))n++;const s=makeSeat(n,30+(seats.length%8)*140,30+Math.floor(seats.length/8)*100);seats.push(s);selected=s.id;render();fillForm()};
+$('copyBtn').onclick=()=>{const s=seats.find(v=>v.id===selected);if(!s)return;let n=1;while(seats.some(v=>v.no===String(n)))n++;const c={...s,id:'s'+Date.now().toString(36),no:String(n),x:s.x+24,y:s.y+24};seats.push(c);selected=c.id;render();fillForm()};
+$('deleteBtn').onclick=()=>{if(!selected)return;if(!confirm('선택한 좌석을 삭제할까요?'))return;seats=seats.filter(s=>s.id!==selected);selected=null;render();fillForm()};
+$('applyBtn').onclick=()=>{const s=seats.find(v=>v.id===selected);if(!s)return;s.no=$('seatNo').value.trim()||s.no;s.name=$('seatName').value.trim();s.w=Math.max(64,Math.min(240,Number($('seatWidth').value)||112));s.h=Math.max(48,Math.min(180,Number($('seatHeight').value)||72));s.status=$('seatStatus').value;render();fillForm()};
+$('editBtn').onclick=()=>{mode='edit';render()};$('viewBtn').onclick=()=>{mode='view';selected=null;render();fillForm()};
+$('saveBtn').onclick=save;$('loadBtn').onclick=load;
+$('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify({version:1,seats},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='더몰입_좌석배치.json';a.click();URL.revokeObjectURL(a.href)};
+$('importFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.seats))throw Error();seats=d.seats;selected=null;render();fillForm();save()}catch(err){alert('올바른 좌석 배치 파일이 아닙니다.')}};r.readAsText(f);e.target.value=''};
+$('zoom').oninput=e=>{zoom=Number(e.target.value)/100;render()};
+$('addRowBtn').onclick=()=>{const y=seats.length?Math.max(...seats.map(s=>s.y+s.h))+28:30;for(let i=0;i<10;i++){let n=1;while(seats.some(s=>s.no===String(n)))n++;seats.push(makeSeat(n,30+i*140,y))}render()};
+$('renumberBtn').onclick=()=>{let n=Number($('startNo').value)||1;seats.forEach(s=>s.no=String(n++));render()};
+viewport.addEventListener('click',()=>{selected=null;render();fillForm()});
+render();fillForm();
+})();
+</script></body></html>
