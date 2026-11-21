@@ -214,8 +214,13 @@ render();fillForm();
 // 로컬 프로그램에서 실행할 때만 하드디스크 저장 데이터와 ClassUp 수집 데이터를 연결합니다.
 if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
  async function localGet(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error('로컬 데이터 읽기 실패');return r.json();}
+ let lastLocalDate=null;
  async function applyLocalState(data){
   if(!data||!data.students&&!data.attendance)return;
+  if(data.date&&data.date!==lastLocalDate){
+   seats.forEach(s=>{s.status='';s.isLate=false;});
+   lastLocalDate=data.date;
+  }
   if(Array.isArray(data.students)){
    const bySeat=new Map();
    data.students.forEach(st=>{const n=st.seatNumber;if(n!==null&&n!==undefined&&String(n).trim()!=='')bySeat.set(String(n).trim(),st);});
