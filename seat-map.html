@@ -142,19 +142,22 @@ $('studentFile').onchange=e=>{
  reader.readAsText(f,'UTF-8');e.target.value='';
 };
 $('zoom').oninput=e=>{zoom=Number(e.target.value)/100;render()};
-// Ctrl + mouse wheel zooms toward the pointer position.
+// Ctrl + wheel zooms only the seat board, anchored at the cursor.
 viewport.addEventListener('wheel',e=>{
  if(!e.ctrlKey)return;
  e.preventDefault();
  const oldZoom=zoom;
- const step=e.deltaY<0?1.1:1/1.1;
- zoom=Math.max(0.5,Math.min(1.5,zoom*step));
- $('zoom').value=Math.round(zoom*100);
+ const factor=e.deltaY<0?1.1:1/1.1;
+ const nextZoom=Math.max(0.5,Math.min(1.5,oldZoom*factor));
+ if(nextZoom===oldZoom)return;
  const rect=viewport.getBoundingClientRect();
- const px=e.clientX-rect.left,py=e.clientY-rect.top;
- viewport.scrollLeft=(viewport.scrollLeft+px)*(zoom/oldZoom)-px;
- viewport.scrollTop=(viewport.scrollTop+py)*(zoom/oldZoom)-py;
- render();
+ const px=e.clientX-rect.left+viewport.scrollLeft;
+ const py=e.clientY-rect.top+viewport.scrollTop;
+ zoom=nextZoom;
+ $('zoom').value=Math.round(zoom*100);
+ board.style.transform='scale('+zoom+')';
+ viewport.scrollLeft=px*(zoom/oldZoom)-(e.clientX-rect.left);
+ viewport.scrollTop=py*(zoom/oldZoom)-(e.clientY-rect.top);
 },{passive:false});
 $('addRowBtn').onclick=()=>{const y=seats.length?Math.max(...seats.map(s=>s.y+s.h))+28:30;for(let i=0;i<10;i++){let n=1;while(seats.some(s=>s.no===String(n)))n++;seats.push(makeSeat(n,30+i*140,y))}render()};
 $('renumberBtn').onclick=()=>{let n=Number($('startNo').value)||1;seats.forEach(s=>s.no=String(n++));render()};
