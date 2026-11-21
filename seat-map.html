@@ -120,33 +120,42 @@ $('attendanceFile').onchange=e=>{
  reader.onload=()=>{
   try{
    const data=JSON.parse(reader.result);
-   let rows=Array.isArray(data)?data:(data.attendance||data.items||data.records||[]);
-   if(!Array.isArray(rows)||!rows.length){
-    if(data&&typeof data==='object'&&!Array.isArray(data)){
-     rows=Object.values(data).filter(v=>v&&typeof v==='object'&&(v.seatNo!==undefined||v.seatNumber!==undefined));
-    }
-   }
-   if(!Array.isArray(rows)||!rows.length)throw Error('출결 목록을 찾을 수 없습니다.');
-   const map=new Map();
-   const statusMap={'출석':'in','등원':'in','출':'in','퇴실':'out','퇴':'out','외출':'away','외':'away','이동':'move','이':'move','미출석':'abs','결석':'abs','결':'abs'};
+   let rows=Array.isArray(data)?data:(data.data||data.attendance||data.items||data.records||[]);
+   if(!Array.isArray(rows)||!rows.length)throw Error('출결 목록(data)을 찾을 수 없습니다.');
+   const byUser=new Map(),bySeat=new Map();
    rows.forEach(row=>{
-    const no=row.seatNo??row.seatNumber??row.seat??'';
-    if(String(no).trim()==='')return;
-    const raw=String(row.status??row.attendanceStatus??'').trim();
-    const status=statusMap[raw]||statusMap[raw.replace(/\\s/g,'')];
-    if(status)map.set(String(no).trim(),{status,name:String(row.name||row.userName||'').trim()});
+    const userId=row.merchantUserId??row.userId;
+    const seatNo=row.seatNo??row.seatNumber??row.seat??'';
+    let status='';
+    // ClassUp 출결 API의 명시적인 상태 필드만 사용합니다.
+    if(row.isAbsence===true) status='abs';
+    else if(row.isAttendanceInProgress===true) status='in';
+    else if(row.endTime) status='out';
+    else if(seatNo!=='' && row.status!==undefined){
+     const raw=String(row.status??row.attendanceStatus??'').trim();
+     const statusMap={'출석':'in','등원':'in','출':'in','퇴실':'out','퇴':'out','외출':'away','외':'away','이동':'move','이':'move','미출석':'abs','결석':'abs','결':'abs'};
+     status=statusMap[raw]||'';
+    }
+    const record={status,late:row.isLate===true,rawStatus:row.userStatus??null};
+    if(userId!==undefined&&userId!==null)byUser.set(String(userId),record);
+    if(String(seatNo).trim()!=='')bySeat.set(String(seatNo).trim(),record);
    });
-   if(!map.size)throw Error('좌석번호와 출결 상태가 있는 자료가 없습니다.');
-   let updated=0,unmatched=0;
+   let updated=0,unknown=0,unmatched=0;
    seats.forEach(s=>{
-    const row=map.get(String(s.no).trim());
-    if(row){s.status=row.status;if(row.name&&!s.name)s.name=row.name;updated++;}
-    else{s.status='';}
+    let record=null;
+    if(s.merchantUserId!==undefined&&s.merchantUserId!==null)record=byUser.get(String(s.merchantUserId));
+    if(!record)record=bySeat.get(String(s.no).trim());
+    if(!record){s.status='';return}
+    if(record.status){s.status=record.status;updated++}
+    else{unknown++}
+    s.isLate=record.late;
+    s.classUpUserStatus=record.rawStatus;
    });
-   map.forEach((v,k)=>{if(!seats.some(s=>String(s.no).trim()===k))unmatched++});
+   const matchedIds=new Set(seats.map(s=>s.merchantUserId==null?'':String(s.merchantUserId)));
+   byUser.forEach((v,k)=>{if(!matchedIds.has(k))unmatched++});
    render();fillForm();save();
-   alert('ClassUp 출결 상태를 반영했습니다.\\n\\n반영된 좌석: '+updated+'석\\n좌석표에 없는 좌석번호: '+unmatched+'개');
-  }catch(err){alert('출결 데이터를 읽지 못했습니다.\\n'+err.message)}
+   alert('ClassUp 출결 데이터를 반영했습니다.\n\n상태 반영: '+updated+'명\n상태 확인 필요: '+unknown+'명\n좌석표에서 학생을 찾지 못한 기록: '+unmatched+'건\n\n※ userStatus 숫자 코드는 임의로 해석하지 않았습니다.');
+  }catch(err){alert('출결 데이터를 읽지 못했습니다.\n'+err.message)}
  };
  reader.readAsText(f,'UTF-8');e.target.value='';
 };
