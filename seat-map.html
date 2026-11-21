@@ -145,7 +145,7 @@ $('attendanceFile').onchange=e=>{
     let record=null;
     if(s.merchantUserId!==undefined&&s.merchantUserId!==null)record=byUser.get(String(s.merchantUserId));
     if(!record)record=bySeat.get(String(s.no).trim());
-    if(!record){s.status='';return}
+    if(!record){s.status='';s.isLate=false;s.classUpUserStatus=null;return}
     if(record.status){s.status=record.status;updated++}
     else{unknown++}
     s.isLate=record.late;
