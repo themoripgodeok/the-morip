@@ -12,8 +12,6 @@
     merchantUserId: row.merchantUserId ?? null,
     name: row.name ?? "",
     seatNumber: row.seatNumber ?? null,
-    isPaused: row.isPaused ?? null,
-    block: row.block ?? null
   });
 
   const safeAttendance = (row) => ({
@@ -24,7 +22,6 @@
     isLate: row.isLate ?? null,
     startTime: row.startTime ?? null,
     endTime: row.endTime ?? null,
-    userStatusReason: row.userStatusReason ?? null
   });
 
   async function getJson(url) {
