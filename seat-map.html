@@ -36,7 +36,7 @@ input,select{width:100%;padding:9px;border:1px solid var(--line);border-radius:8
 <div class="toolbar">
 <button class="primary" id="addBtn">＋ 좌석 추가</button><button id="copyBtn">좌석 복사</button><button class="danger" id="deleteBtn">삭제</button><span class="toolsep"></span>
 <button id="editBtn">편집 모드</button><button id="viewBtn">현황 보기</button><span class="toolsep"></span>
-<button id="saveBtn" class="primary">저장</button><button id="loadBtn">불러오기</button><button id="exportBtn">파일로 저장</button><button id="studentImportBtn">ClassUp 학생 데이터 가져오기</button><input id="studentFile" type="file" accept="application/json,.json" hidden><label class="filelabel" for="importFile">파일 가져오기</label><input id="importFile" type="file" accept="application/json" hidden>
+<button id="saveBtn" class="primary">저장</button><button id="loadBtn">불러오기</button><button id="exportBtn">파일로 저장</button><button id="studentImportBtn">ClassUp 학생 데이터 가져오기</button><input id="studentFile" type="file" accept="application/json,.json" hidden><button id="attendanceImportBtn">ClassUp 출결 데이터 반영</button><input id="attendanceFile" type="file" accept="application/json,.json" hidden><label class="filelabel" for="importFile">파일 가져오기</label><input id="importFile" type="file" accept="application/json" hidden>
 <span class="hint" id="saveState">이 브라우저에 저장됩니다.</span>
 </div>
 <div class="workspace">
@@ -113,6 +113,44 @@ $('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify({version:1,seats
 $('importFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.seats))throw Error();seats=d.seats;selected=null;render();fillForm();save()}catch(err){alert('올바른 좌석 배치 파일이 아닙니다.')}};r.readAsText(f);e.target.value=''};
 
 $('studentImportBtn').onclick=()=>$('studentFile').click();
+$('attendanceImportBtn').onclick=()=>$('attendanceFile').click();
+$('attendanceFile').onchange=e=>{
+ const f=e.target.files[0];if(!f)return;
+ const reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const data=JSON.parse(reader.result);
+   let rows=Array.isArray(data)?data:(data.attendance||data.items||data.records||[]);
+   if(!Array.isArray(rows)||!rows.length){
+    if(data&&typeof data==='object'&&!Array.isArray(data)){
+     rows=Object.values(data).filter(v=>v&&typeof v==='object'&&(v.seatNo!==undefined||v.seatNumber!==undefined));
+    }
+   }
+   if(!Array.isArray(rows)||!rows.length)throw Error('출결 목록을 찾을 수 없습니다.');
+   const map=new Map();
+   const statusMap={'출석':'in','등원':'in','출':'in','퇴실':'out','퇴':'out','외출':'away','외':'away','이동':'move','이':'move','미출석':'abs','결석':'abs','결':'abs'};
+   rows.forEach(row=>{
+    const no=row.seatNo??row.seatNumber??row.seat??'';
+    if(String(no).trim()==='')return;
+    const raw=String(row.status??row.attendanceStatus??'').trim();
+    const status=statusMap[raw]||statusMap[raw.replace(/\\s/g,'')];
+    if(status)map.set(String(no).trim(),{status,name:String(row.name||row.userName||'').trim()});
+   });
+   if(!map.size)throw Error('좌석번호와 출결 상태가 있는 자료가 없습니다.');
+   let updated=0,unmatched=0;
+   seats.forEach(s=>{
+    const row=map.get(String(s.no).trim());
+    if(row){s.status=row.status;if(row.name&&!s.name)s.name=row.name;updated++;}
+    else{s.status='';}
+   });
+   map.forEach((v,k)=>{if(!seats.some(s=>String(s.no).trim()===k))unmatched++});
+   render();fillForm();save();
+   alert('ClassUp 출결 상태를 반영했습니다.\\n\\n반영된 좌석: '+updated+'석\\n좌석표에 없는 좌석번호: '+unmatched+'개');
+  }catch(err){alert('출결 데이터를 읽지 못했습니다.\\n'+err.message)}
+ };
+ reader.readAsText(f,'UTF-8');e.target.value='';
+};
+
 $('studentFile').onchange=e=>{
  const f=e.target.files[0];if(!f)return;
  const reader=new FileReader();
