@@ -80,9 +80,13 @@ class Handler(SimpleHTTPRequestHandler):
                 raise ValueError("Invalid request size")
             payload = json.loads(self.rfile.read(size).decode("utf-8"))
             if self.path == "/api/classup":
-                # Store only the sanitized fields supplied by the extension.
-                payload["receivedAt"] = datetime.now().astimezone().isoformat(timespec="seconds")
-                filename = "classup.json"
+                # Keep the last roster when an attendance-only refresh arrives, and vice versa.
+                with LOCK:
+                    current = read_json("classup.json", {})
+                    current.update(payload)
+                    current["receivedAt"] = datetime.now().astimezone().isoformat(timespec="seconds")
+                    write_json("classup.json", current)
+                return self.send_json(200, {"ok": True, "saved": "classup.json"})
             else:
                 filename = "layout.json"
             with LOCK:
