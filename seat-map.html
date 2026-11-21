@@ -239,6 +239,7 @@ if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
   if(data.receivedAt)$('saveState').textContent='ClassUp 자동 수신 · '+new Date(data.receivedAt).toLocaleTimeString('ko-KR');
  }
  async function localStartup(){
+  $('saveState').textContent='내 컴퓨터 하드디스크에 저장됩니다.';
   try{
    const layout=await localGet('/api/layout');
    if(Array.isArray(layout.seats)&&layout.seats.length){seats=layout.seats;selected=null;render();fillForm();}
