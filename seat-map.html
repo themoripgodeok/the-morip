@@ -101,7 +101,7 @@ function startPointer(e,s,el){
  el.onpointerup=()=>{drag=null;render();fillForm()};
 }
 function fillForm(){const s=seats.find(v=>v.id===selected);$('emptyHelp').hidden=!!s;$('seatForm').hidden=!s;if(!s)return;$('seatNo').value=s.no;$('seatName').value=s.name;$('seatWidth').value=Math.round(s.w);$('seatHeight').value=Math.round(s.h);$('seatStatus').value=s.status||''}
-function save(){try{localStorage.setItem(KEY,JSON.stringify({version:1,seats}));$('saveState').textContent='저장 완료 · '+new Date().toLocaleTimeString('ko-KR');}catch(e){alert('저장하지 못했습니다. 브라우저 저장 공간을 확인해 주세요.')}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({version:1,seats}));if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){fetch('/api/layout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({version:1,seats})}).catch(()=>{});} $('saveState').textContent='저장 완료 · '+new Date().toLocaleTimeString('ko-KR');}catch(e){alert('저장하지 못했습니다. 브라우저 저장 공간을 확인해 주세요.')}}
 function load(){try{const raw=localStorage.getItem(KEY);if(!raw){alert('저장된 좌석표가 없습니다.');return}const data=JSON.parse(raw);if(!Array.isArray(data.seats))throw Error();seats=data.seats;selected=null;render();fillForm();$('saveState').textContent='저장된 좌석표를 불러왔습니다.'}catch(e){alert('저장 데이터를 읽을 수 없습니다.')}}
 $('addBtn').onclick=()=>{let n=1;while(seats.some(s=>s.no===String(n)))n++;const s=makeSeat(n,30+(seats.length%8)*140,30+Math.floor(seats.length/8)*100);seats.push(s);selected=s.id;render();fillForm()};
 $('copyBtn').onclick=()=>{const s=seats.find(v=>v.id===selected);if(!s)return;let n=1;while(seats.some(v=>v.no===String(n)))n++;const c={...s,id:'s'+Date.now().toString(36),no:String(n),x:s.x+24,y:s.y+24};seats.push(c);selected=c.id;render();fillForm()};
@@ -210,5 +210,43 @@ $('addRowBtn').onclick=()=>{const y=seats.length?Math.max(...seats.map(s=>s.y+s.
 $('renumberBtn').onclick=()=>{let n=Number($('startNo').value)||1;seats.forEach(s=>s.no=String(n++));render()};
 viewport.addEventListener('click',()=>{selected=null;render();fillForm()});
 render();fillForm();
+
+// 로컬 프로그램에서 실행할 때만 하드디스크 저장 데이터와 ClassUp 수집 데이터를 연결합니다.
+if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
+ async function localGet(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error('로컬 데이터 읽기 실패');return r.json();}
+ async function applyLocalState(data){
+  if(!data||!data.students&&!data.attendance)return;
+  if(Array.isArray(data.students)){
+   const bySeat=new Map();
+   data.students.forEach(st=>{const n=st.seatNumber;if(n!==null&&n!==undefined&&String(n).trim()!=='')bySeat.set(String(n).trim(),st);});
+   seats.forEach(s=>{const st=bySeat.get(String(s.no).trim());if(st){s.name=String(st.name||'').trim();s.merchantUserId=st.merchantUserId??s.merchantUserId??null;}});
+  }
+  if(Array.isArray(data.attendance)){
+   const byUser=new Map();
+   data.attendance.forEach(row=>{if(row.merchantUserId!==null&&row.merchantUserId!==undefined)byUser.set(String(row.merchantUserId),row);});
+   seats.forEach(s=>{
+    if(s.merchantUserId===null||s.merchantUserId===undefined)return;
+    const row=byUser.get(String(s.merchantUserId));if(!row)return;
+    let status='';
+    if(row.isAbsence===true)status='abs';
+    else if(row.isAttendanceInProgress===true)status='in';
+    else if(row.endTime)status='out';
+    s.status=status;
+    s.isLate=row.isLate===true;
+   });
+  }
+  render();fillForm();
+  if(data.receivedAt)$('saveState').textContent='ClassUp 자동 수신 · '+new Date(data.receivedAt).toLocaleTimeString('ko-KR');
+ }
+ async function localStartup(){
+  try{
+   const layout=await localGet('/api/layout');
+   if(Array.isArray(layout.seats)&&layout.seats.length){seats=layout.seats;selected=null;render();fillForm();}
+  }catch(e){console.warn('[더몰입] 로컬 좌석 배치 파일을 아직 불러오지 못했습니다.',e);}
+  try{await applyLocalState(await localGet('/api/state'));}catch(e){console.warn('[더몰입] ClassUp 데이터가 아직 없습니다.',e);}
+  setInterval(async()=>{try{await applyLocalState(await localGet('/api/state'));}catch(e){console.warn('[더몰입] 로컬 데이터 확인 실패',e);}},5000);
+ }
+ localStartup();
+}
 })();
 </script></body></html>
