@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "더몰입 ClassUp 로컬 연동",
+  "version": "1.0.0",
+  "description": "로그인된 ClassUp 화면에서 학생 및 출결의 필요한 항목만 수집해 이 컴퓨터에 저장합니다.",
+  "permissions": [],
+  "host_permissions": [
+    "https://academy.classup.io/*",
+    "https://api-academy.classup.io/*",
+    "http://127.0.0.1:8765/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://academy.classup.io/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://academy.classup.io/*"],
+      "js": ["page-bridge.js"],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    }
+  ]
+}
